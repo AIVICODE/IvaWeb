@@ -57,7 +57,7 @@ export default function ContactForm() {
       formData.append("recaptcha_token", token); // Agregar el token de reCAPTCHA al formulario
 console.log("ingresa a envio de mail");
       // Enviar la solicitud a tu API backend
-      fetch("/api/verify-recaptcha", {
+      fetch("/api/verifyRecaptcha", {
         method: "POST",
         body: formData,
       })
