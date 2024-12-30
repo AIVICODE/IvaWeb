@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import { Mail, Phone, MapPin } from "lucide-react";
 
@@ -15,35 +15,47 @@ export default function ContactForm() {
   const form = useRef<HTMLFormElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
+  const [isReCaptchaLoaded, setReCaptchaLoaded] = useState(false);
 
-  const siteKey = "6LcuO6kqAAAAACmXmZrIGp6Hfn_63ta4Tfd8o0yD"; // Reemplaza con tu clave de sitio reCAPTCHA
+  const siteKey = "6LcuO6kqAAAAACmXmZrIGp6Hfn_63ta4Tfd8o0yD"; // Tu clave de sitio reCAPTCHA
+
+  // Cargar el script de reCAPTCHA
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.google.com/recaptcha/enterprise.js?render=" + siteKey;
+    script.async = true;
+    script.onload = () => setReCaptchaLoaded(true);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script); // Limpiar el script cuando el componente se desmonte
+    };
+  }, [siteKey]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     console.log("Formulario enviado, ejecutando reCAPTCHA...");
 
-    e.preventDefault();
-    console.log("Formulario enviado2, ejecutando reCAPTCHA...");
-
-
-    // Ejecutar reCAPTCHA antes de enviar
-    if (typeof window.grecaptcha === "undefined") {
+    if (!isReCaptchaLoaded) {
       console.error("reCAPTCHA no se ha cargado todavía.");
-    } else {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha
-          .execute(siteKey, { action: "submit" })
-          .then((token: string) => {
-            console.log("DEBERIA MOSTRARSE EL TOKEN DEBAJO...");
-
-            console.log("CAPTCHA token:", token);
-            onSubmit(token); // Llama a la función onSubmit con el token
-          })
-          .catch((error: Error) => {
-            console.error("Error ejecutando reCAPTCHA:", error);
-          });
-          
-      });
+      setMessage("reCAPTCHA no se ha cargado.");
+      setMessageType("error");
+      return;
     }
+
+    window.grecaptcha.ready(() => {
+      window.grecaptcha
+        .execute(siteKey, { action: "submit" })
+        .then((token: string) => {
+          console.log("Token de reCAPTCHA:", token);
+          onSubmit(token); // Llama a onSubmit con el token obtenido
+        })
+        .catch((error: Error) => {
+          console.error("Error ejecutando reCAPTCHA:", error);
+          setMessage("Hubo un problema al ejecutar reCAPTCHA.");
+          setMessageType("error");
+        });
+    });
   };
 
   const onSubmit = (token: string) => {
@@ -52,35 +64,40 @@ export default function ContactForm() {
 
   const sendEmail = (token: string) => {
     if (form.current) {
-      // Recopilar los datos del formulario
       const formData = new FormData(form.current);
       formData.append("recaptcha_token", token); // Agregar el token de reCAPTCHA al formulario
-console.log("ingresa a envio de mail");
-      // Enviar la solicitud a tu API backend
+  
+      console.log("Enviando datos a la API de reCAPTCHA...");
+      console.log(formData);  // Verifica qué datos estás enviando
+  
       fetch("/api/verifyRecaptcha", {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
+        .then((response) => {
+          console.log("Respuesta de la API de reCAPTCHA:", response);
+          return response.json();
+        })
         .then((data) => {
+          console.log("Datos de la respuesta de la API:", data);
           if (data.success) {
-            // Si la verificación de reCAPTCHA es exitosa, enviar el email
+            // Si la validación de reCAPTCHA es exitosa, enviar el email
             emailjs
               .sendForm(
-                "service_ypket7q", // Reemplaza con tu Service ID
-                "template_88xq8vd", // Reemplaza con tu Template ID
+                "service_ypket7q", 
+                "template_88xq8vd", 
                 form.current,
-                "8RukIO1UTSGoiXKkj" // Reemplaza con tu Public Key
+                "8RukIO1UTSGoiXKkj"
               )
               .then(
                 (result) => {
-                  console.log("Email sent:", result.text);
+                  console.log("Email enviado:", result.text);
                   setMessage("¡Mensaje enviado exitosamente!");
                   setMessageType("success");
                   form.current?.reset();
                 },
                 (error) => {
-                  console.error("Error sending email:", error.text);
+                  console.error("Error enviando email:", error.text);
                   setMessage("Hubo un problema al enviar el mensaje.");
                   setMessageType("error");
                 }
@@ -98,6 +115,7 @@ console.log("ingresa a envio de mail");
         });
     }
   };
+  
 
   return (
     <section id="contacto" className="py-20 bg-gray-50">
@@ -168,6 +186,7 @@ console.log("ingresa a envio de mail");
             </button>
           </form>
 
+          {/* Información de contacto */}
           <div className="bg-white p-8 rounded-lg shadow-lg space-y-8">
             <h3 className="text-2xl font-semibold text-blue-800 mb-4">
               Información de contacto
@@ -210,20 +229,6 @@ console.log("ingresa a envio de mail");
             {message}
           </div>
         )}
-
-        <a
-          href="https://api.whatsapp.com/send?phone=+59891777442&text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios."
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-20 right-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-transform duration-300 flex items-center justify-center"
-          aria-label="Contáctanos por WhatsApp"
-        >
-          <img
-            src="images/whatsapp.svg" // La ruta del archivo SVG en la carpeta public
-            alt="WhatsApp"
-            className="w-10 h-10" // Ajusta el tamaño del icono
-          />
-        </a>
       </div>
     </section>
   );
