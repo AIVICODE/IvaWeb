@@ -64,27 +64,30 @@ export default function ContactForm() {
 
   const sendEmail = (token: string) => {
     if (form.current) {
-      // Recopilar los datos del formulario
       const formData = new FormData(form.current);
       formData.append("recaptcha_token", token); // Agregar el token de reCAPTCHA al formulario
-
-      console.log("Enviando email...");
-
-      // Enviar la solicitud a tu API backend para verificar reCAPTCHA
-      fetch("/api/verify-recaptcha", {
+  
+      console.log("Enviando datos a la API de reCAPTCHA...");
+      console.log(formData);  // Verifica qué datos estás enviando
+  
+      fetch("/api/verifyRecaptcha", {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
+        .then((response) => {
+          console.log("Respuesta de la API de reCAPTCHA:", response);
+          return response.json();
+        })
         .then((data) => {
+          console.log("Datos de la respuesta de la API:", data);
           if (data.success) {
             // Si la validación de reCAPTCHA es exitosa, enviar el email
             emailjs
               .sendForm(
-                "service_ypket7q", // Reemplaza con tu Service ID
-                "template_88xq8vd", // Reemplaza con tu Template ID
+                "service_ypket7q", 
+                "template_88xq8vd", 
                 form.current,
-                "8RukIO1UTSGoiXKkj" // Reemplaza con tu Public Key
+                "8RukIO1UTSGoiXKkj"
               )
               .then(
                 (result) => {
@@ -112,6 +115,7 @@ export default function ContactForm() {
         });
     }
   };
+  
 
   return (
     <section id="contacto" className="py-20 bg-gray-50">
