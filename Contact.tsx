@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import { Mail, Phone, MapPin } from "lucide-react";
 
@@ -15,30 +15,47 @@ export default function ContactForm() {
   const form = useRef<HTMLFormElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
+  const [isReCaptchaLoaded, setReCaptchaLoaded] = useState(false);
 
   const siteKey = "6LcuO6kqAAAAACmXmZrIGp6Hfn_63ta4Tfd8o0yD"; // Tu clave de sitio reCAPTCHA
+
+  // Cargar el script de reCAPTCHA
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.google.com/recaptcha/enterprise.js?render=" + siteKey;
+    script.async = true;
+    script.onload = () => setReCaptchaLoaded(true);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script); // Limpiar el script cuando el componente se desmonte
+    };
+  }, [siteKey]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Formulario enviado, ejecutando reCAPTCHA...");
 
-    if (typeof window.grecaptcha === "undefined") {
+    if (!isReCaptchaLoaded) {
       console.error("reCAPTCHA no se ha cargado todavía.");
-    } else {
-      window.grecaptcha.ready(() => {
-        window.grecaptcha
-          .execute(siteKey, { action: "submit" })
-          .then((token: string) => {
-            console.log("Token de reCAPTCHA:", token);
-            onSubmit(token); // Llama a onSubmit con el token obtenido
-          })
-          .catch((error: Error) => {
-            console.error("Error ejecutando reCAPTCHA:", error);
-            setMessage("Hubo un problema al ejecutar reCAPTCHA.");
-            setMessageType("error");
-          });
-      });
+      setMessage("reCAPTCHA no se ha cargado.");
+      setMessageType("error");
+      return;
     }
+
+    window.grecaptcha.ready(() => {
+      window.grecaptcha
+        .execute(siteKey, { action: "submit" })
+        .then((token: string) => {
+          console.log("Token de reCAPTCHA:", token);
+          onSubmit(token); // Llama a onSubmit con el token obtenido
+        })
+        .catch((error: Error) => {
+          console.error("Error ejecutando reCAPTCHA:", error);
+          setMessage("Hubo un problema al ejecutar reCAPTCHA.");
+          setMessageType("error");
+        });
+    });
   };
 
   const onSubmit = (token: string) => {
