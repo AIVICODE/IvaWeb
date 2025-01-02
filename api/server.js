@@ -17,7 +17,10 @@ app.use(bodyParser.json());
 
 // Configuración de CORS
 app.use(cors({
-  origin: "http://localhost:3001", // Permitir solicitudes desde el frontend
+  origin: [
+    "http://localhost:3001", // Permitir solicitudes desde el frontend local
+    "https://iva-web-eight.vercel.app" // Permitir solicitudes desde el frontend en Vercel
+  ],  // Permitir solicitudes desde el frontend
   methods: ["POST"], // Métodos permitidos
   allowedHeaders: ["Content-Type"], // Cabeceras permitidas
 }));
