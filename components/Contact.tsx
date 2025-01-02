@@ -17,14 +17,20 @@ export default function ContactForm() {
   const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
   const [isReCaptchaLoaded, setReCaptchaLoaded] = useState(false);
 
-  const siteKey = "6LcuO6kqAAAAACmXmZrIGp6Hfn_63ta4Tfd8o0yD"; // Tu clave de sitio reCAPTCHA
+  const siteKey = "6Lfb7KoqAAAAAJMw24GqyS1uIENKvGfcgVWR8_ze"; // Tu clave de sitio reCAPTCHA
 
   // Cargar el script de reCAPTCHA
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/enterprise.js?render=" + siteKey;
+    script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`; // Usando el script estándar
     script.async = true;
-    script.onload = () => setReCaptchaLoaded(true);
+    script.onload = () => {
+      if (window.grecaptcha) {
+        setReCaptchaLoaded(true);
+      } else {
+        console.error("reCAPTCHA no se cargó correctamente.");
+      }
+    };
     document.head.appendChild(script);
 
     return () => {
@@ -32,7 +38,7 @@ export default function ContactForm() {
     };
   }, [siteKey]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Formulario enviado, ejecutando reCAPTCHA...");
 
@@ -43,123 +49,101 @@ export default function ContactForm() {
       return;
     }
 
-    window.grecaptcha.ready(() => {
-      window.grecaptcha
-        .execute(siteKey, { action: "submit" })
-        .then((token: string) => {
-          console.log("Token de reCAPTCHA:", token);
-          onSubmit(token); // Llama a onSubmit con el token obtenido
-        })
-        .catch((error: Error) => {
-          console.error("Error ejecutando reCAPTCHA:", error);
-          setMessage("Hubo un problema al ejecutar reCAPTCHA.");
-          setMessageType("error");
-        });
-    });
-  };
+    try {
+      // Espera a que el reCAPTCHA se ejecute correctamente
+      const token = await window.grecaptcha.execute(siteKey, { action: "submit" });
+      console.log("Token de reCAPTCHA:", token);
 
-  const onSubmit = (token: string) => {
-    sendEmail(token); // Llamamos a la función de envío del formulario con el token
-  };
+      const action = "submit";  // Define la acción que coincida con la acción en el frontend
 
-  const sendEmail = (token: string) => {
-    if (form.current) {
-      const formData = new FormData(form.current);
-      formData.append("recaptcha_token", token); // Agregar el token de reCAPTCHA al formulario
-  
-      console.log("Enviando datos a la API de reCAPTCHA...");
-      console.log(formData);  // Verifica qué datos estás enviando
-  
-      fetch("/api/verifyRecaptcha", {
+      const response = await fetch("http://localhost:3000/verifyRecaptcha", {
         method: "POST",
-        body: formData,
-      })
-        .then((response) => {
-          console.log("Respuesta de la API de reCAPTCHA:", response);
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Datos de la respuesta de la API:", data);
-          if (data.success) {
-            // Si la validación de reCAPTCHA es exitosa, enviar el email
-            emailjs
-              .sendForm(
-                "service_ypket7q", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recaptcha_token: token,
+          recaptcha_action: action,  // Asegúrate de incluir la acción
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Respuesta de la verificación:", data);
+
+      if (data.success) {
+        sendEmail(); // Llama a la función para enviar el correo si reCAPTCHA es válido
+      } else {
+        setMessage("Error de validación de reCAPTCHA.");
+        setMessageType("error");
+      }
+    } catch (error) {
+      console.error("Error ejecutando reCAPTCHA:", error);
+      setMessage("Hubo un problema al ejecutar reCAPTCHA.");
+      setMessageType("error");
+    }
+  };
+
+  const sendEmail = async () => {
+    try {
+      // Configuración para enviar el correo
+      const result = await emailjs.sendForm(
+        "service_ypket7q", 
                 "template_88xq8vd", 
                 form.current,
                 "8RukIO1UTSGoiXKkj"
-              )
-              .then(
-                (result) => {
-                  console.log("Email enviado:", result.text);
-                  setMessage("¡Mensaje enviado exitosamente!");
-                  setMessageType("success");
-                  form.current?.reset();
-                },
-                (error) => {
-                  console.error("Error enviando email:", error.text);
-                  setMessage("Hubo un problema al enviar el mensaje.");
-                  setMessageType("error");
-                }
-              );
-          } else {
-            console.error("Error en la validación de reCAPTCHA:", data.message);
-            setMessage("Error de validación de reCAPTCHA.");
-            setMessageType("error");
-          }
-        })
-        .catch((error) => {
-          console.error("Error en la solicitud de verificación:", error);
-          setMessage("Hubo un problema al verificar reCAPTCHA.");
-          setMessageType("error");
-        });
+      );
+      console.log(result.text);
+      setMessage("Correo enviado correctamente.");
+      setMessageType("success");
+    } catch (error) {
+      console.error("Error al enviar el correo:", error);
+      setMessage("Hubo un problema al enviar el correo.");
+      setMessageType("error");
     }
   };
-  
 
   return (
-    <section id="contacto" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-12 text-blue-800">
-          Contáctanos
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+    <div className="container mx-auto p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Columna del Formulario */}
+        <div>
           <form
             ref={form}
             onSubmit={handleSubmit}
-            id="demo-form"
             className="bg-white p-8 rounded-lg shadow-lg space-y-6"
           >
             <div>
               <label
-                htmlFor="from_name"
+                htmlFor="user_name"
                 className="block text-sm font-medium text-gray-700"
               >
                 Tu nombre
               </label>
               <input
                 type="text"
-                name="from_name"
-                id="from_name"
+                name="user_name"
+                id="user_name"
+                placeholder="Tu nombre"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               />
             </div>
+  
             <div>
               <label
-                htmlFor="emailjs_email"
+                htmlFor="user_email"
                 className="block text-sm font-medium text-gray-700"
               >
                 Tu correo electrónico
               </label>
               <input
                 type="email"
-                name="emailjs_email"
-                id="emailjs_email"
+                name="user_email"
+                id="user_email"
+                placeholder="Tu email"
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               />
             </div>
+  
             <div>
               <label
                 htmlFor="message"
@@ -170,66 +154,80 @@ export default function ContactForm() {
               <textarea
                 name="message"
                 id="message"
-                rows={4}
+                placeholder="Tu mensaje"
                 required
+                rows={4}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
-              ></textarea>
+              />
             </div>
-
+  
             <button
-              className="g-recaptcha w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300 font-semibold"
               type="submit"
-              data-sitekey={siteKey}
-              data-action="submit"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300 font-semibold"
             >
-              Enviar mensaje
+              Enviar
             </button>
           </form>
-
-          {/* Información de contacto */}
-          <div className="bg-white p-8 rounded-lg shadow-lg space-y-8">
-            <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-              Información de contacto
-            </h3>
-            <p className="text-lg text-gray-600">
-              ¿Tienes preguntas o necesitas más información? ¡Escríbenos! Nos
-              encantaría ayudarte.
-            </p>
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Mail className="w-6 h-6 text-blue-600" />
-                </div>
-                <span className="text-gray-700">ivawebcontact@gmail.com</span>
+  
+          {message && (
+            <div
+              className={`mt-6 text-center text-lg font-semibold p-4 rounded-md ${
+                messageType === "success"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {message}
+            </div>
+          )}
+        </div>
+  
+        {/* Columna de Información de Contacto */}
+        <div className="bg-white p-8 rounded-lg shadow-lg space-y-8">
+          <h3 className="text-2xl font-semibold text-blue-800 mb-4">
+            Información de contacto
+          </h3>
+          <p className="text-lg text-gray-600">
+            ¿Tienes preguntas o necesitas más información? ¡Escríbenos! Nos
+            encantaría ayudarte.
+          </p>
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Mail className="w-6 h-6 text-blue-600" />
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <Phone className="w-6 h-6 text-blue-600" />
-                </div>
-                <span className="text-gray-700">+598 91777442</span>
+              <span className="text-gray-700">ivawebcontact@gmail.com</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <Phone className="w-6 h-6 text-blue-600" />
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <MapPin className="w-6 h-6 text-blue-600" />
-                </div>
-                <span className="text-gray-700">Maldonado, Uruguay</span>
+              <span className="text-gray-700">+598 91777442</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-100 p-3 rounded-full">
+                <MapPin className="w-6 h-6 text-blue-600" />
               </div>
+              <span className="text-gray-700">Maldonado, Uruguay</span>
             </div>
           </div>
         </div>
-
-        {message && (
-          <div
-            className={`mt-6 text-center text-lg font-semibold p-4 rounded-md ${
-              messageType === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {message}
-          </div>
-        )}
       </div>
-    </section>
+  
+      {/* Botón de WhatsApp */}
+      <a
+        href="https://api.whatsapp.com/send?phone=+59891777442&text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-20 right-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-transform duration-300 flex items-center justify-center"
+        aria-label="Contáctanos por WhatsApp"
+      >
+        <img
+          src="images/whatsapp.svg"
+          alt="WhatsApp"
+          className="w-10 h-10"
+        />
+      </a>
+    </div>
   );
 }
