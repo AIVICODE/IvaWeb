@@ -1,63 +1,20 @@
-
-const express = require("express");
-const bodyParser = require("body-parser");
 const { RecaptchaEnterpriseServiceClient } = require("@google-cloud/recaptcha-enterprise");
 const cors = require("cors"); // Importa CORS
 const path = require('path'); // Para la ubicación del archivo de credenciales
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-
-const app = express();
-const port = 3000;
-
-// Configuración del cliente reCAPTCHA Enterprise
-const projectID = "ivaweb-1735514742960"; // Reemplaza con tu ID de proyecto
-
-// Middleware
-app.use(bodyParser.json());
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Configuración de CORS
-app.use(cors({
+const corsHandler = cors({
   origin: [
     "http://localhost:3001", // Permitir solicitudes desde el frontend local
     "https://iva-web-eight.vercel.app" // Permitir solicitudes desde el frontend en Vercel
   ],  // Permitir solicitudes desde el frontend
   methods: ["POST"], // Métodos permitidos
   allowedHeaders: ["Content-Type"], // Cabeceras permitidas
-}));
-
-// Ruta para verificar reCAPTCHA
-app.post("/verifyRecaptcha", async (req, res) => {
-  const { recaptcha_token, recaptcha_action } = req.body;
-
-  // Validar los datos recibidos
-  if (!recaptcha_token || !recaptcha_action) {
-    return res.status(400).json({ success: false, message: "Token o acción faltante" });
-  }
-
-  try {
-    // Evaluar el token con reCAPTCHA Enterprise
-    const score = await createAssessment({
-      recaptcha_token,
-      recaptcha_action,
-    });
-
-    // Evaluar la puntuación
-    if (score >= 0.5) {
-      return res.json({ success: true, score });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Puntuación baja o acción no válida",
-        score,
-      });
-    }
-  } catch (error) {
-    console.error("Error al verificar reCAPTCHA:", error.message);
-    return res.status(500).json({ success: false, error: "Error interno del servidor" });
-  }
 });
 
-// Función para crear una evaluación con reCAPTCHA Enterprise
+const projectID = "ivaweb-1735514742960"; // Reemplaza con tu ID de proyecto
+
 async function createAssessment({ recaptcha_token, recaptcha_action }) {
   const client = new RecaptchaEnterpriseServiceClient({
     credentials: JSON.parse(process.env.PROJECTJSON_STRING) // Cargar las credenciales desde la variable de entorno
@@ -97,7 +54,39 @@ async function createAssessment({ recaptcha_token, recaptcha_action }) {
   return response.riskAnalysis.score;
 }
 
-// Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
-});
+// Manejo de la solicitud POST
+export default async function handler(req, res) {
+  corsHandler(req, res, async () => {
+    if (req.method === "POST") {
+      const { recaptcha_token, recaptcha_action } = req.body;
+
+      // Validar los datos recibidos
+      if (!recaptcha_token || !recaptcha_action) {
+        return res.status(400).json({ success: false, message: "Token o acción faltante" });
+      }
+
+      try {
+        const score = await createAssessment({
+          recaptcha_token,
+          recaptcha_action,
+        });
+
+        // Evaluar la puntuación
+        if (score >= 0.5) {
+          return res.json({ success: true, score });
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: "Puntuación baja o acción no válida",
+            score,
+          });
+        }
+      } catch (error) {
+        console.error("Error al verificar reCAPTCHA:", error.message);
+        return res.status(500).json({ success: false, error: "Error interno del servidor" });
+      }
+    } else {
+      res.status(405).json({ success: false, message: "Método no permitido" });
+    }
+  });
+}
