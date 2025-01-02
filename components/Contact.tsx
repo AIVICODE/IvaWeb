@@ -56,7 +56,7 @@ export default function ContactForm() {
 
       const action = "submit";  // Define la acción que coincida con la acción en el frontend
 
-      const response = await fetch("/api/verifyRecaptcha", {
+      const response = await fetch("/api/server", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
