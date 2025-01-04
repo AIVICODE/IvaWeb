@@ -101,133 +101,135 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="container mx-auto p-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Columna del Formulario */}
-        <div>
-          <form
-            ref={form}
-            onSubmit={handleSubmit}
-            className="bg-white p-8 rounded-lg shadow-lg space-y-6"
-          >
+    <div>
+      {/* Sección de Contacto */}
+      <section id="contacto" className="">
+        <div className="container mx-auto p-8">
+          <h2 className="text-4xl font-bold text-center mb-12">Contáctanos</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Columna del Formulario */}
             <div>
-              <label
-                htmlFor="user_name"
-                className="block text-sm font-medium text-gray-700"
+              <form
+                ref={form}
+                onSubmit={handleSubmit}
+                className="bg-white p-8 rounded-lg shadow-lg space-y-6"
               >
-                Tu nombre
-              </label>
-              <input
-                type="text"
-                name="user_name"
-                id="user_name"
-                placeholder="Tu nombre"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
-              />
+                <div>
+                  <label
+                    htmlFor="user_name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Tu nombre
+                  </label>
+                  <input
+                    type="text"
+                    name="user_name"
+                    id="user_name"
+                    placeholder="Tu nombre"
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="user_email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Tu correo electrónico
+                  </label>
+                  <input
+                    type="email"
+                    name="user_email"
+                    id="user_email"
+                    placeholder="Tu email"
+                    required
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Mensaje
+                  </label>
+                  <textarea
+                    name="message"
+                    id="message"
+                    placeholder="Tu mensaje"
+                    required
+                    rows={4}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300 font-semibold"
+                >
+                  Enviar
+                </button>
+              </form>
+              {message && (
+                <div
+                  className={`mt-6 text-center text-lg font-semibold p-4 rounded-md ${
+                    messageType === 'success'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {message}
+                </div>
+              )}
             </div>
-  
-            <div>
-              <label
-                htmlFor="user_email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Tu correo electrónico
-              </label>
-              <input
-                type="email"
-                name="user_email"
-                id="user_email"
-                placeholder="Tu email"
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
-              />
-            </div>
-  
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Mensaje
-              </label>
-              <textarea
-                name="message"
-                id="message"
-                placeholder="Tu mensaje"
-                required
-                rows={4}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
-              />
-            </div>
-  
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300 font-semibold"
-            >
-              Enviar
-            </button>
-          </form>
-  
-          {message && (
-            <div
-              className={`mt-6 text-center text-lg font-semibold p-4 rounded-md ${
-                messageType === "success"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {message}
-            </div>
-          )}
-        </div>
-  
-        {/* Columna de Información de Contacto */}
-        <div className="bg-white p-8 rounded-lg shadow-lg space-y-8">
-          <h3 className="text-2xl font-semibold text-blue-800 mb-4">
-            Información de contacto
-          </h3>
-          <p className="text-lg text-gray-600">
-            ¿Tienes preguntas o necesitas más información? ¡Escríbenos! Nos
-            encantaría ayudarte.
-          </p>
-          <div className="space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Mail className="w-6 h-6 text-blue-600" />
+            {/* Columna de Información de Contacto */}
+            <div className="bg-white p-8 rounded-lg shadow-lg space-y-8">
+              <h3 className="text-2xl font-semibold text-blue-800 mb-4">
+                Información de contacto
+              </h3>
+              <p className="text-lg text-gray-600">
+                ¿Tienes preguntas o necesitas más información? ¡Escríbenos! Nos
+                encantaría ayudarte.
+              </p>
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <Mail className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span className="text-gray-700">ivawebcontact@gmail.com</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <Phone className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span className="text-gray-700">+598 91777442</span>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <MapPin className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <span className="text-gray-700">Maldonado, Uruguay</span>
+                </div>
               </div>
-              <span className="text-gray-700">ivawebcontact@gmail.com</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Phone className="w-6 h-6 text-blue-600" />
-              </div>
-              <span className="text-gray-700">+598 91777442</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <MapPin className="w-6 h-6 text-blue-600" />
-              </div>
-              <span className="text-gray-700">Maldonado, Uruguay</span>
             </div>
           </div>
+          {/* Botón de WhatsApp */}
+          <a
+  href="https://api.whatsapp.com/send?phone=+59891777442&text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="fixed bottom-20 right-8 p-4 rounded-full bg-green-500 shadow-lg hover:scale-110 hover:shadow-xl transition-transform duration-300 flex items-center justify-center z-50"
+  aria-label="Contáctanos por WhatsApp"
+>
+  <img
+    src="images/whatsapp.svg"
+    alt="WhatsApp"
+    className="w-10 h-10"
+  />
+</a>
+
         </div>
-      </div>
-  
-      {/* Botón de WhatsApp */}
-      <a
-        href="https://api.whatsapp.com/send?phone=+59891777442&text=Hola,%20quiero%20más%20información%20sobre%20sus%20servicios."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-20 right-8 bg-green-500 text-white p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-xl transition-transform duration-300 flex items-center justify-center"
-        aria-label="Contáctanos por WhatsApp"
-      >
-        <img
-          src="images/whatsapp.svg"
-          alt="WhatsApp"
-          className="w-10 h-10"
-        />
-      </a>
+      </section>
+     
     </div>
   );
 }

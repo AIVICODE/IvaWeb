@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* Estilo general para el body */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Estilo para el modo oscuro (cuando se añade la clase 'dark') */
+  body.dark {
+    background-color: #1a202c; /* Fondo oscuro */
+    color: white; /* Texto claro */
+  }
+  
+  /* Estilo para las secciones con modo oscuro */
+  section.dark {
+    background-color: #2d3748; /* Fondo oscuro en las secciones */
+  }
+  
+  /* Si tienes elementos de texto, también puedes agregarles clases de Tailwind para manejar colores */
+  h1, h2, p {
+    transition: color 0.3s ease;
+  }
+  
+  body.dark h1, body.dark h2, body.dark p {
+    color: white; /* Texto claro en el modo oscuro */
+  }
+
+
+@keyframes slide-right {
+  0% {
+    transform: translateX(100%) scale(1.1) rotate(-5deg);
+    filter: blur(4px);
+  }
+  50% {
+    transform: translateX(0) scale(1) rotate(0);
+    filter: blur(0);
+  }
+  100% {
+    transform: translateX(-100%) scale(1.1) rotate(5deg);
+    filter: blur(4px);
+  }
+}
+
+
+.animate-slide-right {
+  animation: slide-right 6s infinite ease-in-out;
+}
+

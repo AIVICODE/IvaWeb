@@ -8,7 +8,7 @@ export default function HeroSection() {
       <div className="absolute top-0 left-0 w-full h-full hidden sm:block">
         <video
           className="w-full h-full object-cover"
-          src="images/bannervideo.mp4"
+          src="/images/bannervideo.mp4"
           autoPlay
           loop
           muted
@@ -20,7 +20,7 @@ export default function HeroSection() {
       <div className="absolute top-0 left-0 w-full h-full sm:hidden">
         <img
           className="w-full h-full object-cover"
-          src="images/banner3.png" // Aquí va la imagen para móviles
+          src="/images/banner3.png" // Aquí va la imagen para móviles
           alt="Imagen de fondo móvil"
         />
       </div>
