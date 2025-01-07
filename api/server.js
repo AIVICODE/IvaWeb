@@ -7,7 +7,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const corsHandler = cors({
   origin: [
     "http://localhost:3001", // Permitir solicitudes desde el frontend local
-    "https://iva-web-eight.vercel.app" // Permitir solicitudes desde el frontend en Vercel
+    "https://iva-web-eight.vercel.app"
+    "https://www.ivawebs.com" //Permitir solicitudes desde el frontend en Vercel
   ],  // Permitir solicitudes desde el frontend
   methods: ["POST"], // Métodos permitidos
   allowedHeaders: ["Content-Type"], // Cabeceras permitidas
