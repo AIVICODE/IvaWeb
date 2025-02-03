@@ -10,7 +10,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" type="image/svg+xml" href="/images/logo.svg" /> {/* Asegúrate de que la ruta sea relativa a la carpeta "public" */}
-        <meta name="author" content="Iván Dos Santos" />
+        <meta name="author" content="Iva Web" />
         <meta name="robots" content="index, follow" />
         <meta name="keywords" content="Diseño web, Diseño web para PYMES, Tiendas online, Desarrollo web profesional" />
         <meta name="description" content="Creamos sitios web profesionales para PYMES y emprendedores que desean destacar en el mundo digital. Contáctanos para más información." />
