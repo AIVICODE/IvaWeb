@@ -14,7 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="robots" content="index, follow" />
         <meta name="keywords" content="Diseño web, Diseño web para PYMES, Tiendas online, Desarrollo web profesional" />
         <meta name="description" content="Creamos sitios web profesionales para PYMES y emprendedores que desean destacar en el mundo digital. Contáctanos para más información." />
-        <title>Iván Dos Santos | Diseño Web Profesional</title> {/* Agrega un título */}
+        <title>Diseño Web Profesional</title> {/* Agrega un título */}
       </Head>
       <Component {...pageProps} />
     </>
